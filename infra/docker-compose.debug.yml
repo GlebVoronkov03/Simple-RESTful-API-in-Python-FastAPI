@@ -1,0 +1,82 @@
+version: '3.9'
+
+services:
+  db:
+    image: postgres:latest
+    container_name: social_db
+    restart: unless-stopped
+    volumes:
+      - social_postgresql_volume:/var/lib/postgresql/data/
+    env_file:
+      - ./.env
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -h db -p ${POSTGRES_PORT} -U ${POSTGRES_USER}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: pgadmin
+    restart: unless-stopped
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=${PGADMIN_EMAIL}
+      - PGADMIN_DEFAULT_PASSWORD=${PGADMIN_PASSWORD}
+    ports:
+      - "8090:80"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+
+  redis:
+    image: redis:latest
+    container_name: social_redis
+    restart: always
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  celery:
+    build:
+      context: ../backend
+      dockerfile: Dockerfile
+    container_name: social_celery
+    restart: always
+    command: bash -c "celery -A src.tasks.tasks:celery worker --loglevel=INFO"
+    volumes:
+      - ../backend/:/app/:rw
+      - cache_pip_volume:/root/.cache/pip/:rw
+    env_file:
+      - ./.env
+    depends_on:
+      - redis
+      - db
+
+  celery_flower:
+    build:
+      context: ../backend
+      dockerfile: Dockerfile
+    container_name: social_flower
+    restart: always
+    command: bash -c "celery -A src.tasks.tasks:celery flower --loglevel=INFO"
+    ports:
+      - "5555:5555"
+    volumes:
+      - ../backend/:/app/:rw
+      - cache_pip_volume:/root/.cache/pip/:rw
+    env_file:
+      - ./.env
+    depends_on:
+      - redis
+      - db
+
+
+volumes:
+  social_postgresql_volume:
+  pgadmin_data:
+  cache_pip_volume:  

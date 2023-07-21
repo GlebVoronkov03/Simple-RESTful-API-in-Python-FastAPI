@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "social networking"
+version = "1.0.0"
+description = "Simple RESTful API using FastAPI for a social networking application."
+authors = ["exp-ext <ext77@yandex.ru>"]
+license = "MIT"
+readme = "README.md"
+
+[tool.pytest.ini_options]
+pythonpath = [
+  ".", "src",
+]
+asyncio_mode="auto"
+
+[tool.poetry.dependencies]
+python = "3.11.4"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
