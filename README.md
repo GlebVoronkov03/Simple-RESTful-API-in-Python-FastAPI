@@ -1,4 +1,4 @@
-<h1 align="center">Social networking application</h1>
+<h1 align="center">Simple RESTful API in Python FastAPI</h1>
 
 ![статус](https://github.com/exp-ext/social_network/actions/workflows/main.yml/badge.svg?event=push)
 
